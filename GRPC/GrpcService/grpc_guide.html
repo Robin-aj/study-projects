@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Complete Guide to gRPC</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 14mm 14mm 14mm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.48;
+    color: #1e293b;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cover / Header section */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0369a1 100%);
+    color: #ffffff;
+    padding: 26px 28px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #38bdf8;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .cover h1 {
+    font-size: 22pt;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 8px 0;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  .cover p.subtitle {
+    font-size: 9.8pt;
+    color: #cbd5e1;
+    margin: 0 0 14px 0;
+    line-height: 1.45;
+  }
+
+  .cover-meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    font-size: 8pt;
+    color: #94a3b8;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 10px;
+  }
+
+  .cover-meta span strong {
+    color: #f1f5f9;
+    display: block;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+
+  /* Headings */
+  h2 {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 16px 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  h2 .num {
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 8.5pt;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin: 12px 0 4px 0;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+    color: #334155;
+  }
+
+  /* Grid Layouts */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 8px 0;
+  }
+
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .card-title {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 3px;
+  }
+
+  .card p {
+    font-size: 8.2pt;
+    margin: 0;
+    color: #475569;
+    line-height: 1.4;
+  }
+
+  /* Callout Boxes */
+  .callout {
+    border-radius: 6px;
+    padding: 9px 12px;
+    margin: 10px 0;
+    font-size: 8.5pt;
+  }
+
+  .callout-info {
+    background: #f0f9ff;
+    border-left: 4px solid #0284c7;
+    color: #0c4a6e;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 8pt;
+  }
+
+  th {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px solid #334155;
+  }
+
+  td {
+    padding: 5px 8px;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  /* Code Blocks */
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 7.6pt;
+    line-height: 1.35;
+    margin: 6px 0;
+  }
+
+  code {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 8pt;
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 1px 3px;
+    border-radius: 3px;
+  }
+
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  .kw { color: #38bdf8; font-weight: 600; }
+  .str { color: #4ade80; }
+  .type { color: #fbbf24; }
+  .cmt { color: #94a3b8; font-style: italic; }
+
+  /* Diagram */
+  .diagram-container {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 8px 0;
+  }
+
+  .diagram-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .flow-box {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #94a3b8;
+    border-radius: 5px;
+    padding: 6px 4px;
+    text-align: center;
+    font-size: 7.5pt;
+    line-height: 1.25;
+  }
+
+  .flow-box.highlight {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    font-weight: 600;
+    color: #0369a1;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 10pt;
+  }
+
+  .badge-yes {
+    display: inline-block;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 7pt;
+  }
+
+  .badge-no {
+    display: inline-block;
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 7pt;
+  }
+
+  .page-break {
+    page-break-before: always;
+    break-before: always;
+  }
+
+  .footer-note {
+    font-size: 7.5pt;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 14px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ================= PAGE 1 ================= -->
+  <div class="cover">
+    <div class="cover-badge">Architecture & Engineering Guide</div>
+    <h1>The Complete Guide to gRPC</h1>
+    <p class="subtitle">A comprehensive handbook covering Remote Procedure Calls, Protocol Buffers binary serialization, HTTP/2 multiplexing, real-world C# .NET implementation, and production architecture patterns.</p>
+    <div class="cover-meta">
+      <div><strong>Protocol:</strong> gRPC v1.x (Google / CNCF)</div>
+      <div><strong>Format:</strong> Protocol Buffers v3</div>
+      <div><strong>Transport:</strong> HTTP/2 Full-Duplex</div>
+      <div><strong>Framework:</strong> .NET 8 / 9 / 10 & Polyglot</div>
+    </div>
+  </div>
+
+  <h2><span class="num">1</span> What is gRPC?</h2>
+  <p><strong>gRPC</strong> (which stands for <em>gRPC Remote Procedure Calls</em>) is a high-performance, open-source universal RPC framework created by <strong>Google</strong> in 2015 and now governed by the <strong>Cloud Native Computing Foundation (CNCF)</strong>.</p>
+  
+  <p>In traditional REST architectures, services exchange text-based JSON or XML documents over HTTP/1.1 endpoints. With gRPC, a client application can <strong>directly invoke a method on a remote server application as if it were a local in-memory method call</strong>, regardless of whether the server is located on the same host or across the globe, and regardless of what language the server is written in.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">⚡ High Performance & Low Latency</div>
+      <p>By using compact binary serialization (Protocol Buffers) instead of verbose JSON strings, payloads are up to 70% smaller, and serialization is 5x to 8x faster with drastically lower CPU overhead.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔒 Strict Contract-First Safety</div>
+      <p>Services and schemas are defined in a language-agnostic <code>.proto</code> contract. Client and server stubs are automatically generated at compile time, eliminating typos and runtime serialization bugs.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🌐 Polyglot Architecture</div>
+      <p>Write your backend in C#, your AI model service in Python, and your high-throughput gateway in Go or Rust. All services share the exact same <code>.proto</code> contracts effortlessly.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🌊 True Bidirectional Streaming</div>
+      <p>Built directly on HTTP/2, gRPC provides native support for request streaming, response streaming, and simultaneous full-duplex bidirectional streaming over a single TCP connection.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">2</span> Why Was gRPC Invented?</h2>
+  <p>Inside Google, massive distributed clusters communicate billions of times per second. Traditional REST/JSON caused three major bottlenecks:</p>
+  <ol style="margin: 0 0 8px 0; padding-left: 20px; font-size: 8.5pt;">
+    <li><strong>JSON Parsing Overhead:</strong> Converting ASCII text strings into memory objects consumes significant CPU and memory allocation cycles.</li>
+    <li><strong>HTTP/1.1 Connection Head-of-Line Blocking:</strong> Browsers and servers had to open 6+ separate TCP connections to send concurrent requests, consuming socket descriptors and handshakes.</li>
+    <li><strong>Contract Drift:</strong> Without strict schemas, REST APIs frequently drifted from client expectations, leading to runtime null-reference and schema mismatches.</li>
+  </ol>
+  <p>gRPC solved all three problems by combining <strong>Protocol Buffers</strong> (binary serialization) with <strong>HTTP/2</strong> (multiplexed streams).</p>
+
+  <!-- ================= PAGE 2 ================= -->
+  <div class="page-break"></div>
+
+  <h2><span class="num">3</span> The 4 Architectural Pillars of gRPC</h2>
+
+  <h3>1. Protocol Buffers (Protobuf) – The Binary Contract</h3>
+  <p>Protobuf is Google's language-neutral mechanism for serializing structured data. Instead of serializing human-readable field names as strings (e.g. <code>{"name": "Jaydeep"}</code>), Protobuf encodes fields into tiny binary key-value tags where numbers represent fields:</p>
+
+  <pre><code><span class="cmt">// greet.proto</span>
+<span class="kw">syntax</span> = <span class="str">"proto3"</span>;
+<span class="kw">option</span> csharp_namespace = <span class="str">"GrpcService"</span>;
+
+<span class="kw">service</span> Greeter {
+  <span class="kw">rpc</span> SayHello (HelloRequest) <span class="kw">returns</span> (HelloReply);
+}
+
+<span class="kw">message</span> HelloRequest {
+  <span class="type">string</span> name = 1;  <span class="cmt">// '1' is the unique binary field tag, NOT a value!</span>
+}
+
+<span class="kw">message</span> HelloReply {
+  <span class="type">string</span> message = 1;
+}</code></pre>
+
+  <h3>2. HTTP/2 Transport Layer</h3>
+  <p>Unlike HTTP/1.1, gRPC runs exclusively over <strong>HTTP/2</strong> as its transport protocol:</p>
+  <ul>
+    <li><strong>Multiplexing:</strong> Hundreds of independent bidirectional calls stream over a <em>single persistent TCP connection</em> simultaneously without blocking.</li>
+    <li><strong>HPACK Header Compression:</strong> Compresses repetitive metadata headers, dramatically cutting network bandwidth.</li>
+    <li><strong>Flow Control & Reset:</strong> Fine-grained control over byte streaming without tearing down the entire connection.</li>
+  </ul>
+
+  <h3>3. Automatic Code Generation (Stubs)</h3>
+  <p>The compiler (<code>protoc</code> or .NET's <code>Grpc.Tools</code>) compiles <code>greet.proto</code> into strongly-typed C# classes:</p>
+  <ul>
+    <li><strong>Server Base Class:</strong> Provides an abstract class (<code>Greeter.GreeterBase</code>) that you inherit and override with your business logic.</li>
+    <li><strong>Client Stub:</strong> Provides a ready-to-use client class (<code>Greeter.GreeterClient</code>) with async methods matching every RPC endpoint.</li>
+  </ul>
+
+  <h3>4. Streaming Capabilities (4 Communication Models)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">RPC Type</th>
+        <th style="width: 42%;">Description</th>
+        <th style="width: 33%;">Typical Real-World Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Unary RPC</strong></td>
+        <td>Single request from client &rarr; Single response from server (Standard Request/Response).</td>
+        <td>Standard CRUD, Authentication, User profile lookup.</td>
+      </tr>
+      <tr>
+        <td><strong>Server Streaming</strong></td>
+        <td>Single request &rarr; Stream of multiple response messages sent by the server over time.</td>
+        <td>Live market data tickers, downloading large files in chunks, real-time log viewers.</td>
+      </tr>
+      <tr>
+        <td><strong>Client Streaming</strong></td>
+        <td>Stream of messages from client &rarr; Single summary response from server.</td>
+        <td>IoT telemetry upload, uploading large video files, batch sensor logging.</td>
+      </tr>
+      <tr>
+        <td><strong>Bidirectional Streaming</strong></td>
+        <td>Both client and server stream read/write messages independently and concurrently.</td>
+        <td>Real-time chat applications, multiplayer game synchronization, live video/audio conferencing.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ================= PAGE 3 ================= -->
+  <div class="page-break"></div>
+
+  <h2><span class="num">4</span> How gRPC Works Under the Hood (Execution Flow)</h2>
+
+  <div class="diagram-container">
+    <div style="font-weight: 700; color: #0f172a; margin-bottom: 6px; font-size: 8.5pt;">End-to-End Execution Sequence</div>
+    <div class="diagram-flow">
+      <div class="flow-box">
+        <strong>1. Client Code</strong><br/>
+        Calls <code>client.SayHelloAsync()</code>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-box highlight">
+        <strong>2. Client Stub</strong><br/>
+        Protobuf encodes object into binary payload
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-box">
+        <strong>3. HTTP/2 Wire</strong><br/>
+        Frame POST <code>/greet.Greeter/SayHello</code>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-box highlight">
+        <strong>4. Server Stub</strong><br/>
+        Decodes binary into C# <code>HelloRequest</code>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-box">
+        <strong>5. Service Impl</strong><br/>
+        Executes logic & returns <code>HelloReply</code>
+      </div>
+    </div>
+  </div>
+
+  <p>Here is what happens during a single gRPC call in detail:</p>
+  <ol style="margin: 0 0 10px 0; padding-left: 20px; font-size: 8.5pt;">
+    <li><strong>Client Invocation:</strong> The client application calls <code>await client.SayHelloAsync(request)</code> as if it were a standard local C# method.</li>
+    <li><strong>Client Stub Serialization:</strong> The generated client stub intercepts the call. It feeds the C# object into the Protobuf serializer, converting properties into compact binary format.</li>
+    <li><strong>HTTP/2 Frame Dispatch:</strong> The stub wraps the payload in an HTTP/2 <code>DATA</code> frame with metadata headers (including <code>content-type: application/grpc</code> and target path <code>/package.Service/Method</code>). It dispatches this frame across the established TCP multiplexed connection.</li>
+    <li><strong>Server Deserialization:</strong> The ASP.NET Core Kestrel HTTP/2 server receives the frame, identifies the route, and passes the binary payload to the Protobuf deserializer, which reconstructs the strongly typed C# parameter.</li>
+    <li><strong>Business Logic Execution:</strong> The server executes the overridden <code>SayHello</code> method in <code>GreeterService</code>.</li>
+    <li><strong>Return Trip:</strong> The return object is serialized into binary, sent back as an HTTP/2 response frame along with gRPC status trailers (e.g. <code>grpc-status: 0 (OK)</code>), and unpacked into the client's return object.</li>
+  </ol>
+
+  <h2><span class="num">5</span> Practical C# .NET Implementation Walkthrough</h2>
+  <p>Below is how the server and client interact in our solution:</p>
+
+  <div class="grid-2">
+    <div>
+      <div class="card-title">1. Server Service (GreeterService.cs)</div>
+      <pre><code><span class="kw">public class</span> <span class="type">GreeterService</span> : <span class="type">Greeter.GreeterBase</span>
+{
+    <span class="kw">public override Task</span>&lt;<span class="type">HelloReply</span>&gt; <span class="kw">SayHello</span>(
+        <span class="type">HelloRequest</span> request, <span class="type">ServerCallContext</span> context)
+    {
+        <span class="cmt">// Read parameter & return reply object</span>
+        <span class="kw">return</span> <span class="type">Task</span>.FromResult(<span class="kw">new</span> <span class="type">HelloReply</span>
+        {
+            Message = <span class="str">"Hello "</span> + request.Name
+        });
+    }
+}</code></pre>
+    </div>
+    <div>
+      <div class="card-title">2. Client Consumer (Program.cs)</div>
+      <pre><code><span class="cmt">// Reuse one channel across application lifetime!</span>
+<span class="kw">using var</span> channel = <span class="type">GrpcChannel</span>.ForAddress(
+    <span class="str">"http://localhost:5273"</span>);
+
+<span class="kw">var</span> client = <span class="kw">new</span> <span class="type">Greeter.GreeterClient</span>(channel);
+
+<span class="cmt">// Strongly-typed remote procedure call:</span>
+<span class="kw">var</span> reply = <span class="kw">await</span> client.SayHelloAsync(
+    <span class="kw">new</span> <span class="type">HelloRequest</span> { Name = <span class="str">"Robin"</span> });
+
+<span class="type">Console</span>.WriteLine(reply.Message);</code></pre>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 4 ================= -->
+  <div class="page-break"></div>
+
+  <h2><span class="num">6</span> When to Use gRPC (and When NOT to Use It)</h2>
+
+  <div class="grid-2">
+    <div class="card" style="border-top: 3px solid #059669;">
+      <div class="card-title" style="color: #065f46;">✅ Best Used For (Ideal Scenarios)</div>
+      <ul style="padding-left: 18px; margin: 4px 0; font-size: 8.2pt; color: #334155; line-height: 1.45;">
+        <li><strong>Internal Microservices (East-West Traffic):</strong> Service-to-service communication within Kubernetes or private clouds where latency and throughput are critical.</li>
+        <li><strong>Polyglot Systems:</strong> Environments where microservices are written in diverse languages (C#, Go, Python, Java) needing a single contract source of truth.</li>
+        <li><strong>Real-Time Streaming Systems:</strong> Applications needing continuous data feeds, live market rates, GPS location tracking, or telemetry.</li>
+        <li><strong>Low-Power & Mobile Devices (IoT):</strong> Compact binary payloads consume significantly less bandwidth and battery life.</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 3px solid #dc2626;">
+      <div class="card-title" style="color: #991b1b;">❌ NOT Recommended For</div>
+      <ul style="padding-left: 18px; margin: 4px 0; font-size: 8.2pt; color: #334155; line-height: 1.45;">
+        <li><strong>Direct Browser Front-ends (Public Web APIs):</strong> Browsers do not expose low-level control of HTTP/2 framing. Connecting browsers to gRPC requires a proxy (such as Envoy and gRPC-Web).</li>
+        <li><strong>Public Third-Party APIs:</strong> External developers expect standard REST/JSON endpoints easily consumable via curl, Postman, or Swagger without needing Protobuf compilers.</li>
+        <li><strong>Edge Caching:</strong> HTTP/1.1 REST responses leverage standard reverse-proxy caching (Varnish, Cloudflare, CDN). gRPC uses HTTP POST for all calls, making edge caching complex.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="num">7</span> gRPC vs REST vs GraphQL vs WebSockets</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>gRPC</th>
+        <th>REST (JSON)</th>
+        <th>GraphQL</th>
+        <th>WebSockets</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Protocol</strong></td>
+        <td>HTTP/2</td>
+        <td>HTTP/1.1 or HTTP/2</td>
+        <td>HTTP/1.1 or HTTP/2</td>
+        <td>TCP (WS Handshake)</td>
+      </tr>
+      <tr>
+        <td><strong>Data Format</strong></td>
+        <td>Binary (Protocol Buffers)</td>
+        <td>Text (JSON, XML)</td>
+        <td>Text (JSON)</td>
+        <td>Text / Binary Frames</td>
+      </tr>
+      <tr>
+        <td><strong>Contract Style</strong></td>
+        <td>Strict (<code>.proto</code> file)</td>
+        <td>Optional (OpenAPI/Swagger)</td>
+        <td>Strict (GraphQL Schema)</td>
+        <td>None (Custom protocol)</td>
+      </tr>
+      <tr>
+        <td><strong>Performance</strong></td>
+        <td><span class="badge-yes">Ultra Fast (Low CPU)</span></td>
+        <td>Moderate</td>
+        <td>Moderate</td>
+        <td><span class="badge-yes">Fast</span></td>
+      </tr>
+      <tr>
+        <td><strong>Streaming</strong></td>
+        <td>Full Bidirectional</td>
+        <td><span class="badge-no">No (SSE one-way only)</span></td>
+        <td>Subscriptions (via WS)</td>
+        <td>Full Bidirectional</td>
+      </tr>
+      <tr>
+        <td><strong>Browser Support</strong></td>
+        <td>Requires gRPC-Web proxy</td>
+        <td><span class="badge-yes">Native & Universal</span></td>
+        <td><span class="badge-yes">Native & Universal</span></td>
+        <td><span class="badge-yes">Native & Universal</span></td>
+      </tr>
+      <tr>
+        <td><strong>Primary Use Case</strong></td>
+        <td>Backend Microservices, IoT</td>
+        <td>Public APIs, Web CRUD</td>
+        <td>Mobile & Web frontends</td>
+        <td>Real-time chat, gaming</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><span class="num">8</span> Production Best Practices for gRPC</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">1. Reuse GrpcChannel Instances</div>
+      <p>Creating a <code>GrpcChannel</code> is expensive because it establishes TLS and HTTP/2 handshakes. <strong>Never create a channel per call.</strong> Keep it as a singleton or inject it via <code>services.AddGrpcClient&lt;T&gt;()</code>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">2. Always Set Deadlines (Timeouts)</div>
+      <p>Network calls can hang indefinitely without timeouts. Always pass a deadline:
+      <br/><code>await client.SayHelloAsync(request, deadline: DateTime.UtcNow.AddSeconds(5));</code></p>
+    </div>
+    <div class="card">
+      <div class="card-title">3. Schema Evolution Guidelines</div>
+      <p>Never change field tag numbers (e.g., <code>string name = 1;</code>). If you deprecate a field, mark it as <code>reserved 1;</code> so future developers do not reuse the slot and break backwards compatibility.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">4. Use Layer 7 Load Balancing</div>
+      <p>Because gRPC runs over long-lived multiplexed HTTP/2 TCP streams, traditional L4 load balancers send all traffic to just one pod. Use an L7 proxy (e.g. Envoy, Traefik, or Nginx) to balance individual RPC calls.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-info" style="margin-top: 10px;">
+    <strong>Executive Rule of Thumb:</strong> Use <strong>gRPC</strong> when you control both the client and server (backend microservices, real-time pipelines, or mobile apps) for maximum throughput, compile-time safety, and minimal latency. Use <strong>REST</strong> when building public APIs meant for external consumption across the web.
+  </div>
+
+  <div class="footer-note">
+    Generated for Study Projects &bull; gRPC Comprehensive Engineering Reference &bull; .NET Ecosystem
+  </div>
+
+</body>
+</html>
